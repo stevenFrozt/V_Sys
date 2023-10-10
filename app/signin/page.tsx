@@ -40,9 +40,9 @@ export default function Page() {
   const router = useRouter();
 
   async function Submit(e: React.FormEvent<HTMLFormElement>) {
-    setValidationMessage("");
     e.preventDefault();
-    console.table(form);
+    setValidationMessage("");
+
     function titleCase(str: string) {
       return str
         .toLowerCase()
@@ -83,7 +83,14 @@ export default function Page() {
       }
     } catch (error: any) {
       console.error(error);
-      setValidationMessage(error.response?.data?.message);
+      setValidationMessage(
+        error.response?.data?.message
+          ? error.response?.data?.message
+          : error.message
+          ? " Server Error, Please Try again Later."
+          : "",
+      );
+
       setIsLoading(false);
     }
 
@@ -161,7 +168,7 @@ export default function Page() {
               type="submit"
               disabled={isLoading}
             >
-              {isLoading ? "Loading" : "Sign In"}
+              {isLoading ? "Signing In..." : "Sign In"}
             </Button>
 
             <div className="mt-6 flex items-center">
