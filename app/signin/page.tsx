@@ -10,6 +10,9 @@ import { ScanLine } from "lucide-react";
 import axios from "axios";
 import jwt from "jsonwebtoken";
 import { useRouter } from "next/navigation";
+import cookieCutter from "cookie-cutter";
+import { useAuthContext } from "../providers/authProvider";
+import { cn } from "@/lib/utils";
 
 type tokenData = {
   account: {
@@ -23,11 +26,15 @@ type tokenData = {
     block: string;
     grade_lvl: string;
     password: string;
+    role?: string;
   };
   iat: number;
   exp: number;
 };
+
 export default function Page() {
+  const { setAuthData, setDisplay } = useAuthContext();
+  const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({ student_id: "", password: "" });
   const [validationMessage, setValidationMessage] = useState("");
   const router = useRouter();
@@ -36,14 +43,52 @@ export default function Page() {
     setValidationMessage("");
     e.preventDefault();
     console.table(form);
+    function titleCase(str: string) {
+      return str
+        .toLowerCase()
+        .split(" ")
+        .map((word) => word[0].toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
+    }
 
-    // try {
-    //   const response = await axios.post("http://localhost:5000/auth", form);
-    //   const token = jwt.decode(response.data.token) as tokenData;
-    // } catch (error: any) {
-    //   console.error(error);
-    //   setValidationMessage(error.response?.data?.message);
-    // }
+    try {
+      setIsLoading(true);
+
+      const response = await axios.post("http://localhost:5000/auth", form);
+      const token = jwt.decode(response.data.token) as tokenData;
+      // Set Cookie
+      cookieCutter.set("voterAuthToken", response.data.token);
+
+      const firstName = token?.account.first_name;
+      const lastName = token?.account.last_name;
+      const fullName = `${firstName} ${lastName}`;
+      const nameInitial = `${firstName?.charAt(0)}${lastName?.charAt(0)}`;
+
+      if (token.account.role === "user") router.push("/welcome");
+      else if (token.account.role === "admin") router.push("/admin/dashboard");
+      if (token) {
+        setAuthData(token);
+        // Set Cookie
+        cookieCutter.set(
+          "userInfo",
+          JSON.stringify({
+            fullName: titleCase(fullName),
+            nameInitial: nameInitial.toUpperCase(),
+          }),
+        );
+        setDisplay({
+          fullName: titleCase(fullName),
+          nameInitial: nameInitial.toUpperCase(),
+        });
+      }
+    } catch (error: any) {
+      console.error(error);
+      setValidationMessage(error.response?.data?.message);
+      setIsLoading(false);
+    }
+
+    // Delete a cookie
+    // cookieCutter.set("voterAuthToken", "", { expires: new Date(0) });
   }
 
   return (
@@ -110,10 +155,13 @@ export default function Page() {
             </div>
             <Button
               color="primary"
-              className="w-full rounded-md bg-[#FF0D13]"
+              className={cn("w-full rounded-md bg-[#FF0D13]", {
+                "bg-gray-500 text-gray-300": isLoading,
+              })}
               type="submit"
+              disabled={isLoading}
             >
-              Sign In
+              {isLoading ? "Loading" : "Sign In"}
             </Button>
 
             <div className="mt-6 flex items-center">

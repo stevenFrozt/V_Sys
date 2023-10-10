@@ -2,7 +2,11 @@
 import React from "react";
 import Layout from "@/components/user/layout";
 import { Button } from "@nextui-org/react";
+import cookieCutter from "cookie-cutter";
 export default function Page() {
+  // Get a cookie
+  console.log();
+
   return (
     <Layout>
       <div className="mx-auto min-h-[calc(100vh-64px)] max-w-screen-2xl overflow-hidden bg-[url('/images/welcome/voteBG.jpg')] bg-cover bg-top bg-no-repeat px-4  lg:min-h-[calc(100vh-80px)]  lg:bg-[center_-11rem] lg:px-20">

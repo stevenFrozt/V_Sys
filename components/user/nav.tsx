@@ -1,13 +1,30 @@
 "use client";
 
 import Image from "next/image";
-import React from "react";
+import React, { useEffect } from "react";
 import logo from "@/public/images/login/aclcLogo.jpg";
 import { Avatar } from "@nextui-org/react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import cookieCutter from "cookie-cutter";
+import { useRouter } from "next/navigation";
+import { useAuthContext } from "@/app/providers/authProvider";
+
 export default function Nav() {
+  const { authData, display, setDisplay } = useAuthContext();
+  const router = useRouter();
+  useEffect(() => {
+    setDisplay(JSON.parse(cookieCutter.get("userInfo")));
+  }, []);
+
+  const signOut = () => {
+    // Delete a cookies
+    cookieCutter.set("userInfo", "", { expires: new Date(0) });
+    cookieCutter.set("voterAuthToken", "", { expires: new Date(0) });
+    router.push("/signin");
+  };
+
   return (
     <div className="bg-white">
       <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-4 lg:px-20">
@@ -26,23 +43,23 @@ export default function Nav() {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="text-right ">
-            <h5 className="text-sm leading-none">John Doe</h5>
-            <Link
-              href={"/login"}
+          <div className="text-right leading-none">
+            <h5 className="text-sm leading-none">{display?.fullName}</h5>
+            <button
+              onClick={signOut}
               className="text-xs font-medium text-blue-500  "
             >
-              <div className="py-1 leading-none transition-all  duration-100 lg:hover:translate-y-1">
+              <div className=" leading-none transition-all  duration-100 lg:hover:translate-y-1">
                 Sign Out
               </div>
-            </Link>
+            </button>
           </div>
           <Avatar
             showFallback
             isBordered
             color="danger"
             // src="https://i.pravatar.cc/150?u=a042581f4e29026024d"
-            name="JD"
+            name={display?.nameInitial}
             className="h-9 w-9 "
           />
         </div>

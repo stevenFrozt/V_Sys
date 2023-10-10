@@ -1,10 +1,11 @@
-import React, { Children } from "react";
+import React from "react";
 import Nav from "./nav";
 import NavBottom from "./navBottom";
 
 type Props = { children: React.ReactNode };
 
 export default function Layout({ children }: Props) {
+  // const { auth, setAuth } = useAuthContext();
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
       <Nav />
